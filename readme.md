@@ -1,6 +1,6 @@
-# WhatApp HR Bot (Twilio AI CHallenge)
+# WhatApp HR Bot (Twilio AI Challenge)
 
-This is a Python application that allows you to load a CSV file for employee FAQs and ask questions about it using natural language. The application uses a LLM to generate a response about your CSV File.
+This is a Python application that allows you to load a CSV file for employee FAQs and ask questions about it using natural language. The application uses a LLM to generate a response about your CSV File and then sends to Whatapp via the Twilio API
 
 ## How it works
 
@@ -51,7 +51,3 @@ ngrok http 5000
   In the Twilio Console, navigate to your WhatsApp Sandbox settings.
   Set the "WHEN A MESSAGE COMES IN" URL to your ngrok URL, e.g., http://<your-ngrok-id>.ngrok.io/whatsapp.
   Now, when you send a message to your WhatsApp Sandbox number, the Flask app will handle the incoming message, process it using LangChain, and respond accordingly.
-
-## Contributing
-
-This repository is for educational purposes only and is not intended to receive further contributions. It is supposed to be used as support material for the YouTube tutorial that shows how to build the project.
