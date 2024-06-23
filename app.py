@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import pandas as pd
 from flask import Flask, request, jsonify
 from twilio.twiml.messaging_response import MessagingResponse
+#from twilio.twiml.voice_response import VoiceResponse
 from twilio.rest import Client
 from langchain.llms import OpenAI
 from langchain.prompts import PromptTemplate
@@ -25,16 +26,17 @@ client = Client(account_sid, auth_token)
 openai_api_key = os.getenv('OPENAI_API_KEY')
 
 # Define the prompt template for OpenAI
-prompt_template = PromptTemplate(
-    instruction = "Answer the following question using the provided context:\nContext: {}\nQuestion: {}",
-)
+# prompt_templatex = PromptTemplate(
+#     instruction = "Answer the following question using the provided context:\nContext: {}\nQuestion: {}"
+# )
 
 
 # Initialize LangChain
 llmx = OpenAI(api_key=openai_api_key,temperature=0.9)  # You can customize the temperature as needed
 
 # Initialize LangChain with pre-trained question-answering chain
-qa_chain = load_qa_chain(llm=llmx, prompt_template=prompt_template)
+#qa_chain = load_qa_chain(llm=llmx, prompt_template=prompt_templatex)
+qa_chain = load_qa_chain(llm=llmx)
 
 
 
@@ -51,6 +53,23 @@ def get_answer(question):
         return answer
 
 
+# def make_call(msg):
+#     # make a call to the employee from the Whatapp bot.
+#     #what about sending the message as voice response.. call the person directly
+#     print('Making a call to HR manager')
+#     # what about the HR manager phone number
+#     hr_tel_no = os.getenv('HR_MANAGER_TEL_NO')
+#     staff_tel_no = os.getenv('STAFF_TEL_NO')
+#     new_call = client.calls.create(to=staff_tel_no, from_=hr_tel_no, method="GET")
+#     print("Serving TwiML")
+#     twiml_response = VoiceResponse()
+#     #twiml_response.say(answer)
+#     twiml_response.say(msg)
+#     twiml_response.hangup()
+#     twiml_xml = twiml_response.to_xml()
+#     print("Generated twiml: {}".format(twiml_xml))
+
+
 @app.route('/whatsapp', methods=['POST'])
 def whatsapp():
     incoming_msg = request.values.get('Body', '').strip()
@@ -59,10 +78,13 @@ def whatsapp():
     
     # Get the answer from LangChain
     answer = get_answer(incoming_msg)
+
+    #make that call to employee
+    #say_hello = make_call("Please check your whatapp for message")
     
     # Send the response back to WhatsApp
     msg.body(answer)
-    
+
     return str(resp)
 
 if __name__ == '__main__':
