@@ -5,15 +5,23 @@ from flask import Flask, request, jsonify
 from twilio.twiml.messaging_response import MessagingResponse
 #from twilio.twiml.voice_response import VoiceResponse
 from twilio.rest import Client
-from langchain.llms import OpenAI
-from langchain.prompts import PromptTemplate
-from langchain.chains.question_answering import load_qa_chain
+# from langchain.llms import OpenAI
+# from langchain.prompts import PromptTemplate
+# from langchain.chains.question_answering import load_qa_chain
+# better  n modern way to use langchain
+#from langchain.agents import create_csv_agent
+#from langchain_experimental.agents import create_csv_agent
+from langchain_experimental.agents import create_csv_agent
+from langchain.agents.agent_types import AgentType
+from langchain.chat_models import ChatOpenAI #ChatAnthropic  or ChatOpenAI Azure
+
 
 # loads the environment variables from .env file
 load_dotenv()# take environment variables
 
 # Load knowledgebase
-knowledgebase = pd.read_csv('data/employee_book.csv')
+#knowledgebase = pd.read_csv('data/employee_book.csv')
+knowledgebase = 'data/employee_book.csv'
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -32,25 +40,45 @@ openai_api_key = os.getenv('OPENAI_API_KEY')
 
 
 # Initialize LangChain
-llmx = OpenAI(api_key=openai_api_key,temperature=0.9)  # You can customize the temperature as needed
+#llmx = OpenAI(api_key=openai_api_key,temperature=0.9)  # You can customize the temperature as needed
 
 # Initialize LangChain with pre-trained question-answering chain
 #qa_chain = load_qa_chain(llm=llmx, prompt_template=prompt_templatex)
-qa_chain = load_qa_chain(llm=llmx)
+#qa_chain = load_qa_chain(llm=llmx)
+# agent = create_csv_agent(
+#     llmx,
+#     knowledgebase,
+#     verbose=True,
+#     agent_type = AgentType.ZERO_SHOT_REACT_DESCRIPTION
+# )
+agent = create_csv_agent(
+    ChatOpenAI(model='gpt-3.5-turbo',
+               temperature=0.9,
+               openai_api_key=openai_api_key),
+               knowledgebase,
+               verbose=True,
+               agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION
+)
+
+
 
 
 
 def get_answer(question):
     # Simple search in the knowledgebase
-    response = knowledgebase[knowledgebase['question'].str.contains(question, case=False, na=False)]
-    if not response.empty:
-        return response.iloc[0]['answer']
-    else:
-        # If no answer found, use LangChain for complex questions
-        #return "I'm sorry, I don't have an answer for that."
-        context = knowledgebase.to_string(index=False) # Use entire knowledgebase as context
-        answer = qa_chain.run(question=question, context=context)
-        return answer
+    # response = knowledgebase[knowledgebase['question'].str.contains(question, case=False, na=False)]
+    # if not response.empty:
+    #     return response.iloc[0]['answer']
+    # else:
+    #     # If no answer found, use LangChain for complex questions
+    #     #return "I'm sorry, I don't have an answer for that."
+    #     context = knowledgebase.to_string(index=False) # Use entire knowledgebase as context
+    #     #answer = qa_chain.run(question=question, context=context)
+    #     answer = agent.run(question)
+    #     return answer
+    answer = agent.run(question)
+    return answer
+
 
 
 # def make_call(msg):
